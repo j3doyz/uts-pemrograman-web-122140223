@@ -1,46 +1,26 @@
-import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import ProductPage from './pages/ProductPage';
-import CartPage from './pages/CartPage';
-import NotFoundPage from './pages/NotFoundPage';
-import Navbar from './components/Navbar';
-import { CartProvider } from './context/CartContext';
-import Footer from './components/Footer';
-import './styles/main.css';
-import './styles/theme.css';
+import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import ProductPage from './pages/ProductPage'
+import CartPage from './pages/CartPage'
+import NotFoundPage from './pages/NotFoundPage'
+import Navbar from './components/Navbar'
+import Notification from './components/Notification'
+import { CartProvider } from './context/CartContext'
 
 function App() {
-  // Set initial theme based on system preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = (e) => {
-      const newTheme = e.matches ? 'dark' : 'light';
-      document.body.classList.toggle('dark-mode', e.matches);
-      localStorage.setItem('theme', newTheme);
-    };
+  const [darkMode, setDarkMode] = useState(false)
 
-    // Set initial theme
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      document.body.classList.toggle('dark-mode', savedTheme === 'dark');
-    } else {
-      document.body.classList.toggle('dark-mode', mediaQuery.matches);
-      localStorage.setItem('theme', mediaQuery.matches ? 'dark' : 'light');
-    }
-
-    // Listen for system theme changes
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    };
-  }, []);
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    document.body.classList.toggle('dark-mode')
+  }
 
   return (
-    <CartProvider>
-      <div className="app">
-        <Navbar />
+    <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
+      <CartProvider>
+        <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <Notification />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<HomePage />} />
@@ -48,10 +28,9 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <Footer />
-      </div>
-    </CartProvider>
-  );
+      </CartProvider>
+    </div>
+  )
 }
 
-export default App;
+export default App

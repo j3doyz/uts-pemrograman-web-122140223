@@ -1,14 +1,25 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useCart } from '../context/CartContext';
 
 function Navbar() {
+  const { cart } = useCart();
   const [darkMode, setDarkMode] = useState(() => {
-    // Initialize based on localStorage or system preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+  const [itemAdded, setItemAdded] = useState(false);
+
+  // Watch for cart changes to show "added" animation
+  useEffect(() => {
+    if (cart.length > 0) {
+      setItemAdded(true);
+      const timer = setTimeout(() => setItemAdded(false), 2000); // Animation lasts 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [cart]);
 
   const toggleTheme = () => {
     const newDarkMode = !darkMode;
@@ -17,10 +28,12 @@ function Navbar() {
     localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
   };
 
-  // Set initial theme on component mount
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
   }, []);
+
+  // Calculate total items in cart
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <nav className="navbar">
@@ -34,6 +47,11 @@ function Navbar() {
           </Link>
           <Link to="/cart" className="navbar-link cart-link">
             Cart
+            {totalItems > 0 && (
+              <span className={`cart-badge ${itemAdded ? 'pulse' : ''}`}>
+                {totalItems}
+              </span>
+            )}
           </Link>
           <button 
             className="theme-toggle" 
